@@ -8,7 +8,7 @@ if(!$fileName.EndsWith(".aps")){
     exit
 }
 
-Install-Module -Name ImportExcel
+Import-Module -Name ImportExcel
 
 $currentDirectory = $PWD.Path
 $fileName = $fileName.TrimStart(".\")
