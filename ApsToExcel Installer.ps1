@@ -8,7 +8,7 @@ try {
     Write-Host "installerar..."
     $scriptUrl = "https://raw.githubusercontent.com/Tehpson/apstoexcel/main/Main.ps1"
     $scriptName = "\apsToExcel.ps1"
-
+    Set-ExecutionPolicy RemoteSigned
     Invoke-WebRequest -Uri $scriptUrl -OutFile "$env:USERPROFILE\$scriptName"
 
     $scriptFolder = [System.IO.Path]::GetDirectoryName("$env:USERPROFILE\$scriptName")
