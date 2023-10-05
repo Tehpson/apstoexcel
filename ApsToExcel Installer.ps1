@@ -20,5 +20,5 @@ try {
 
 } catch {
     Write-Host "Fel: $($_.Exception.Message)"
-    Read-Host "Installationen är klar. Tryck på Enter för att stänga..."
+    Read-Host "Något Gick fel...."
 }
