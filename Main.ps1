@@ -1,38 +1,65 @@
-param (
-    [Parameter(Position = 0, Mandatory = $true)]
-    [string]$fileName
-)
-
-if(!$fileName.EndsWith(".aps")){
-    Write-Host "Detta är inte en .aps fil"
-    exit
-}
-
+Add-Type -AssemblyName System.Windows.Forms
 Import-Module -Name ImportExcel
 
-$currentDirectory = $PWD.Path
-$fileName = $fileName.TrimStart(".\")
-$filePath = $currentDirectory + "\" + $fileName
-$exportPath = $filePath.TrimEnd(".aps") + ".xlsx"
+$openFileDialog = New-Object System.Windows.Forms.OpenFileDialog
+$openFileDialog.InitialDirectory = [System.Environment]::GetFolderPath('MyDocuments')
+$openFileDialog.Filter = 'APS Files (*.aps)|*.aps|All Files (*.*)|*.*'
+$openFileDialog.Title = 'Select a file'
 
-$lines = Get-Content -Path $filePath
+if ($openFileDialog.ShowDialog() -eq 'OK') {
+    $selectedFilePath = $openFileDialog.FileName
+} else {
+    Write-Host "No file selected"
+    return
+}
+
+if (!$selectedFilePath.EndsWith(".aps")) {
+    Write-Host "Detta är inte en .aps fil"
+    return
+}
+
+$lines = Get-Content -Path $selectedFilePath
 $exportData = @()
+$radData = @()
+$nonRadData = @()
+
 foreach ($line in $lines) {
-    $match = $line | Select-String 'Name="([^"]+)"\s+Value="([^"]*)"\s+Text="([^"]+)"'
-    if ($match) {
-        $Name = $match.Matches.Groups[1].Value
-        $Value = $match.Matches.Groups[2].Value
-        $Text = $match.Matches.Groups[3].Value
-        $Name = $Name -replace '\s+', ' '
-        $Value = $Value -replace '\s+', ' '
-        $Text = $Text -replace '\s+', ' '
-        $csvObj = [PSCustomObject]@{
-            Name = $Name
-            Value = $Value
-            Text = $Text
+    if ($line -match '<Var\s+Name="([^"]*)"\s+Value="([^"]*)"(?:\s+Unit="([^"]*)")?\s+Text="([^"]*)".*') {
+
+        $Name = $matches[1]
+        $Value = $matches[2]
+        $Unit = $matches[3]
+        $Text = $matches[4]
+
+        if ($Text -match '^Rad\s+(\d+)') {
+            $RadNumber = [int]::Parse($matches[1])
+            $PaddedRadNumber = $RadNumber.ToString("D3")
+            $radData += [PSCustomObject]@{
+                Name = $Name
+                Value = $Value
+                Unit = $Unit
+                Text = $Text
+                RadNumber = $PaddedRadNumber
+            }
+        } else {
+            $exportData += [PSCustomObject]@{
+                Name = $Name
+                Value = $Value
+                Unit = $Unit
+                Text = $Text
+            }
         }
-        $exportData += $csvObj
     }
 }
 
-$exportData | Export-Excel -Path $exportPath -AutoSize -Show -IncludePivotTable -AutoFilter
+# Sort the "Rad" rows numerically using a custom sorting function
+$radData = $radData | Sort-Object -Property RadNumber
+
+# Combine the "Rad" rows with the non-"Rad" rows
+$exportData += $radData
+
+$fileNameWithoutExtension = [System.IO.Path]::GetFileNameWithoutExtension($selectedFilePath)
+$timestamp = Get-Date -Format "yyyyMMddHHmmss"
+$exportPath = [System.Environment]::GetFolderPath('MyDocuments') + "\" + $fileNameWithoutExtension + "_$timestamp.xlsx"
+
+$exportData | Export-Excel -Path $exportPath -AutoSize -Show -TableName "MyTable"
