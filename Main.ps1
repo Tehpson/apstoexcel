@@ -1,3 +1,4 @@
+
 Add-Type -AssemblyName System.Windows.Forms
 Import-Module -Name ImportExcel
 
@@ -21,7 +22,6 @@ if (!$selectedFilePath.EndsWith(".aps")) {
 $lines = Get-Content -Path $selectedFilePath
 $exportData = @()
 $radData = @()
-$nonRadData = @()
 
 foreach ($line in $lines) {
     if ($line -match '<Var\s+Name="([^"]*)"\s+Value="([^"]*)"(?:\s+Unit="([^"]*)")?\s+Text="([^"]*)".*') {
@@ -52,10 +52,7 @@ foreach ($line in $lines) {
     }
 }
 
-# Sort the "Rad" rows numerically using a custom sorting function
 $radData = $radData | Sort-Object -Property RadNumber
-
-# Combine the "Rad" rows with the non-"Rad" rows
 $exportData += $radData
 
 $fileNameWithoutExtension = [System.IO.Path]::GetFileNameWithoutExtension($selectedFilePath)
