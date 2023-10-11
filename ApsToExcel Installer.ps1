@@ -8,7 +8,7 @@ try {
     Write-Host "installerar..."
     $scriptUrl = "https://raw.githubusercontent.com/Tehpson/apstoexcel/main/Main.ps1"
     $scriptName = "\apsToExcel.ps1"
-
+    Set-ExecutionPolicy RemoteSigned -Force
     Invoke-WebRequest -Uri $scriptUrl -OutFile "$env:USERPROFILE\$scriptName"
 
     $scriptFolder = [System.IO.Path]::GetDirectoryName("$env:USERPROFILE\$scriptName")
@@ -20,5 +20,5 @@ try {
 
 } catch {
     Write-Host "Fel: $($_.Exception.Message)"
-    Read-Host "Installationen är klar. Tryck på Enter för att stänga..."
+    Read-Host "Något Gick fel...."
 }
