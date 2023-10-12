@@ -5,7 +5,7 @@ if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
     return
 }
 
-Invoke-WebRequest -Uri "https://github.com/Tehpson/apstoexcel/releases/download/1.0.1.2/APS2XLSX.exe" -OutFile "APS2XLSX.exe"
+Invoke-WebRequest -Uri "https://github.com/Tehpson/apstoexcel/releases/download/1.0.1.3/APS2XLSX.exe" -OutFile "APS2XLSX.exe"
 
 $installFolder = "C:\Program Files\Aps2Excel"
 
